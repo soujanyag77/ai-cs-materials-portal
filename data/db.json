@@ -1,0 +1,146 @@
+{
+  "documents": [
+    {
+      "id": "doc_1791262902023_70use",
+      "title": "Class 10 AI - Unit 1: Introduction to AI & Project Cycle",
+      "description": "Comprehensive study guide covering AI Domains (Data, CV, NLP), Sustainable Development Goals (SDGs), and the 5 stages of the AI Project Cycle.",
+      "grade": "Class 10",
+      "chapterNumber": "Chapter 1",
+      "chapterTitle": "Introduction to AI & Project Cycle",
+      "subject": "Artificial Intelligence",
+      "fileType": "pdf",
+      "fileName": "class10_ai_unit1.pdf",
+      "originalName": "Class_10_AI_Unit_1_Notes.pdf",
+      "fileSize": 827,
+      "createdAt": "2026-10-06T05:01:42.023Z"
+    },
+    {
+      "id": "doc_1791262902024_tn660",
+      "title": "Class 10 AI - Unit 5: Computer Vision & Image Processing",
+      "description": "Detailed study chapter explaining RGB image channels, pixel arrays, grayscale conversion, image classification vs object detection.",
+      "grade": "Class 10",
+      "chapterNumber": "Chapter 5",
+      "chapterTitle": "Computer Vision",
+      "subject": "Artificial Intelligence",
+      "fileType": "html",
+      "fileName": "class10_cv_chapter5.html",
+      "originalName": "Class_10_Computer_Vision.html",
+      "fileSize": 2452,
+      "createdAt": "2026-10-06T05:01:42.024Z"
+    },
+    {
+      "id": "doc_1791263586904_pmxjl",
+      "title": "Class 11 CS - Unit 1: Computer Systems Organisation & Logic Gates",
+      "description": "CBSE Class 11 CS (Code 083) notes covering CPU registers, Bus architecture, RAM/ROM memory hierarchy, Truth tables, and De Morgan Laws.",
+      "grade": "Class 11",
+      "chapterNumber": "Chapter 1",
+      "chapterTitle": "Computer System Organisation",
+      "subject": "Computer Science",
+      "fileType": "pdf",
+      "fileName": "class11_cs_computer_systems.pdf",
+      "originalName": "Class_11_CS_Computer_Systems.pdf",
+      "fileSize": 843,
+      "createdAt": "2026-10-06T05:13:06.904Z"
+    },
+    {
+      "id": "doc_1791263586906_pwqkz",
+      "title": "Class 11 CS - Unit 2: Python Functions, Scope & Modules",
+      "description": "Detailed study guide explaining function parameters, default values, global vs local variable scope, and math/random modules.",
+      "grade": "Class 11",
+      "chapterNumber": "Chapter 2",
+      "chapterTitle": "Computational Thinking & Functions",
+      "subject": "Computer Science",
+      "fileType": "html",
+      "fileName": "class11_cs_python_functions.html",
+      "originalName": "Class_11_CS_Python_Functions.html",
+      "fileSize": 544,
+      "createdAt": "2026-10-06T05:13:06.906Z"
+    },
+    {
+      "id": "doc_1791263586907_g7vby",
+      "title": "Class 12 CS - Unit 1: Data Structures - Stack Implementation in Python",
+      "description": "Presentation slide deck explaining LIFO principles, Stack Push/Pop operations using Python Lists, Overflow & Underflow exception handling.",
+      "grade": "Class 12",
+      "chapterNumber": "Chapter 1",
+      "chapterTitle": "Data Structures: Stack",
+      "subject": "Computer Science",
+      "fileType": "ppt",
+      "fileName": "class12_cs_stack_datastructure.html",
+      "originalName": "Class_12_CS_Stack_DataStructure.ppt",
+      "fileSize": 1091,
+      "createdAt": "2026-10-06T05:13:06.907Z"
+    },
+    {
+      "id": "doc_1791263586908_x4jpl",
+      "title": "Class 12 CS - Unit 2: Relational Databases & SQL Queries Lab",
+      "description": "Interactive SQL Query Simulator covering DDL, DML, GROUP BY, HAVING, and INNER JOIN clauses for CBSE Class 12 CS Practical.",
+      "grade": "Class 12",
+      "chapterNumber": "Chapter 2",
+      "chapterTitle": "Database Management & SQL",
+      "subject": "Computer Science",
+      "fileType": "html",
+      "fileName": "class12_cs_sql_queries_lab.html",
+      "originalName": "Class_12_CS_SQL_Queries_Lab.html",
+      "fileSize": 2741,
+      "createdAt": "2026-10-06T05:13:06.908Z"
+    }
+  ],
+  "access_logs": [
+    {
+      "id": "log_1791262902027_9dpox",
+      "documentId": "doc_1791262902023_70use",
+      "studentName": "Aarav Sharma",
+      "rollNumber": "101",
+      "studentClass": "Class 10",
+      "timestamp": "2026-10-06T05:01:42.027Z"
+    },
+    {
+      "id": "log_1791262902028_owsev",
+      "documentId": "doc_1791262902023_70use",
+      "studentName": "Aarav Sharma",
+      "rollNumber": "101",
+      "studentClass": "Class 10",
+      "timestamp": "2026-10-06T05:01:42.028Z"
+    },
+    {
+      "id": "log_1791262902029_pfjm4",
+      "documentId": "doc_1791262902023_70use",
+      "studentName": "Priya Patel",
+      "rollNumber": "104",
+      "studentClass": "Class 10",
+      "timestamp": "2026-10-06T05:01:42.029Z"
+    },
+    {
+      "id": "log_1791262902029_3g2js",
+      "documentId": "doc_1791262902024_tn660",
+      "studentName": "Aarav Sharma",
+      "rollNumber": "101",
+      "studentClass": "Class 10",
+      "timestamp": "2026-10-06T05:01:42.029Z"
+    },
+    {
+      "id": "log_1791263586908_gmf5i",
+      "documentId": "doc_1791263586904_pmxjl",
+      "studentName": "Aditya Varma",
+      "rollNumber": "202",
+      "studentClass": "Class 11",
+      "timestamp": "2026-10-06T05:13:06.908Z"
+    },
+    {
+      "id": "log_1791263586909_q29cb",
+      "documentId": "doc_1791263586907_g7vby",
+      "studentName": "Divya Nair",
+      "rollNumber": "308",
+      "studentClass": "Class 12",
+      "timestamp": "2026-10-06T05:13:06.909Z"
+    },
+    {
+      "id": "log_1791263586910_igi76",
+      "documentId": "doc_1791263586908_x4jpl",
+      "studentName": "Divya Nair",
+      "rollNumber": "308",
+      "studentClass": "Class 12",
+      "timestamp": "2026-10-06T05:13:06.910Z"
+    }
+  ]
+}
