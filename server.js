@@ -9,18 +9,15 @@ const seedSampleData = require('./seed-data');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS & JSON parsing
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Upload directory setup
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// Multer Storage Configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, UPLOADS_DIR);
@@ -34,7 +31,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const allowed = ['.pdf', '.ppt', '.pptx', '.docx', '.doc', '.html', '.htm'];
@@ -46,16 +43,18 @@ const upload = multer({
   }
 });
 
-// Run Seed Data on startup
 seedSampleData();
 
 // --- REST API ENDPOINTS ---
 
-// Teacher Authentication Endpoint
+// 1. Teacher Authentication Endpoint (Username: CSGS, Password: GS@123)
 app.post('/api/auth/teacher-login', (req, res) => {
-  const { pin } = req.body;
-  // Default passcode: 1234 or teacher123
-  if (pin === '1234' || pin === 'teacher123' || pin === 'admin') {
+  const { username, password, pin } = req.body;
+  
+  const userValid = !username || username.trim() === 'CSGS';
+  const passValid = (password && password.trim() === 'GS@123') || (pin && (pin.trim() === 'GS@123' || pin.trim() === 'CSGS' || pin.trim() === '1234'));
+
+  if (userValid && passValid) {
     return res.json({
       success: true,
       role: 'teacher',
@@ -63,10 +62,71 @@ app.post('/api/auth/teacher-login', (req, res) => {
       message: 'Teacher authenticated successfully!'
     });
   }
-  return res.status(401).json({ success: false, error: 'Invalid Teacher Passcode. Try 1234' });
+
+  return res.status(401).json({
+    success: false,
+    error: 'Invalid Teacher Credentials. Use Username: CSGS and Password: GS@123'
+  });
 });
 
-// 1. Get All Documents (with optional filtering)
+// 2. Student Registration Endpoint
+app.post('/api/auth/student-register', (req, res) => {
+  try {
+    const { name, rollNumber, grade, section } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Full Name is required.' });
+    }
+    if (!rollNumber || !rollNumber.trim()) {
+      return res.status(400).json({ error: 'Roll Number is required.' });
+    }
+
+    const { student, isNew } = db.registerStudent({
+      name,
+      rollNumber,
+      grade: grade || '10',
+      section: section || 'A'
+    });
+
+    res.json({
+      success: true,
+      isNew,
+      student,
+      message: isNew ? 'Student registered successfully!' : 'Student account retrieved!'
+    });
+  } catch (err) {
+    console.error('Error registering student:', err);
+    res.status(500).json({ error: 'Failed to register student.' });
+  }
+});
+
+// 3. Student Login Endpoint
+app.post('/api/auth/student-login', (req, res) => {
+  try {
+    const { name, rollNumber } = req.body;
+
+    if (!name || !rollNumber) {
+      return res.status(400).json({ error: 'Name and Roll Number are required to login.' });
+    }
+
+    const student = db.loginStudent({ name, rollNumber });
+
+    if (!student) {
+      return res.status(404).json({ error: 'No student account found. Please register first.' });
+    }
+
+    res.json({
+      success: true,
+      student,
+      message: 'Student logged in successfully!'
+    });
+  } catch (err) {
+    console.error('Error logging in student:', err);
+    res.status(500).json({ error: 'Failed to login student.' });
+  }
+});
+
+// Get All Documents
 app.get('/api/documents', (req, res) => {
   try {
     let docs = db.getDocuments();
@@ -114,7 +174,7 @@ app.get('/api/documents', (req, res) => {
   }
 });
 
-// 2. Upload Document
+// Upload Document
 app.post('/api/upload', upload.single('file'), (req, res) => {
   try {
     if (!req.file) {
@@ -154,7 +214,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   }
 });
 
-// 3. Get / View Raw File Content
+// Get / View Raw File Content
 app.get('/api/documents/:id/file', (req, res) => {
   try {
     const doc = db.getDocumentById(req.params.id);
@@ -189,7 +249,7 @@ app.get('/api/documents/:id/file', (req, res) => {
   }
 });
 
-// 4. Log Student Access (Record who accessed and timestamp)
+// Log Student Access
 app.post('/api/access', (req, res) => {
   try {
     const { documentId, studentName, rollNumber, studentClass } = req.body;
@@ -216,7 +276,7 @@ app.post('/api/access', (req, res) => {
   }
 });
 
-// 5. Get Analytics Data
+// Get Analytics Data
 app.get('/api/analytics', (req, res) => {
   try {
     const analytics = db.getAnalytics();
@@ -227,7 +287,7 @@ app.get('/api/analytics', (req, res) => {
   }
 });
 
-// 6. Delete Document
+// Delete Document
 app.delete('/api/documents/:id', (req, res) => {
   try {
     const deleted = db.deleteDocument(req.params.id);

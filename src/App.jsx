@@ -4,9 +4,8 @@ import DocumentCard from './components/DocumentCard';
 import DocumentViewerModal from './components/DocumentViewerModal';
 import UploadModal from './components/UploadModal';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
-import StudentIdentityModal from './components/StudentIdentityModal';
-import TeacherLoginModal from './components/TeacherLoginModal';
-import { BookOpen, Sparkles, Plus, Search, Filter, RefreshCw, Lock, ShieldCheck, UserCheck } from 'lucide-react';
+import UnifiedAuthModal from './components/UnifiedAuthModal';
+import { BookOpen, Sparkles, Plus, Search, Filter, RefreshCw, Lock, ShieldCheck, UserCheck, UserPlus } from 'lucide-react';
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
@@ -15,7 +14,7 @@ export default function App() {
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [selectedFileType, setSelectedFileType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('library'); // 'library' | 'analytics'
+  const [activeTab, setActiveTab] = useState('library');
 
   // Dark / Light Theme state
   const [theme, setTheme] = useState(() => {
@@ -42,12 +41,6 @@ export default function App() {
     return !!sessionStorage.getItem('teacher_token');
   });
 
-  // Modals
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [isIdentityOpen, setIsIdentityOpen] = useState(false);
-  const [isTeacherLoginOpen, setIsTeacherLoginOpen] = useState(false);
-  const [activeViewerDoc, setActiveViewerDoc] = useState(null);
-
   // Student Identity stored in localStorage
   const [studentIdentity, setStudentIdentity] = useState(() => {
     try {
@@ -57,6 +50,11 @@ export default function App() {
       return null;
     }
   });
+
+  // Modals
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [activeViewerDoc, setActiveViewerDoc] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -81,36 +79,39 @@ export default function App() {
     }
   };
 
-  const handleTeacherLoginSuccess = (token) => {
+  const handleStudentAuthSuccess = (student) => {
+    setStudentIdentity(student);
+    try {
+      localStorage.setItem('student_identity', JSON.stringify(student));
+    } catch (e) {}
+    setIsAuthOpen(false);
+  };
+
+  const handleTeacherAuthSuccess = (token) => {
     sessionStorage.setItem('teacher_token', token);
     setIsTeacher(true);
+    setIsAuthOpen(false);
     setIsUploadOpen(true);
   };
 
-  const handleLogoutTeacher = () => {
+  const handleLogout = () => {
     sessionStorage.removeItem('teacher_token');
+    localStorage.removeItem('student_identity');
     setIsTeacher(false);
+    setStudentIdentity(null);
   };
 
   const handleOpenUpload = () => {
     if (!isTeacher) {
-      setIsTeacherLoginOpen(true);
+      setIsAuthOpen(true);
       return;
     }
     setIsUploadOpen(true);
   };
 
-  const handleSaveIdentity = (newIdentity) => {
-    setStudentIdentity(newIdentity);
-    try {
-      localStorage.setItem('student_identity', JSON.stringify(newIdentity));
-    } catch (e) {}
-    setIsIdentityOpen(false);
-  };
-
   const handleOpenDocument = (doc) => {
-    if (!studentIdentity || !studentIdentity.name) {
-      setIsIdentityOpen(true);
+    if (!studentIdentity && !isTeacher) {
+      setIsAuthOpen(true);
       return;
     }
     setActiveViewerDoc(doc);
@@ -148,11 +149,10 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenUpload={handleOpenUpload}
-        onOpenIdentity={() => setIsIdentityOpen(true)}
-        onOpenTeacherLogin={() => setIsTeacherLoginOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
         isTeacher={isTeacher}
-        onLogoutTeacher={handleLogoutTeacher}
         studentIdentity={studentIdentity}
+        onLogout={handleLogout}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         selectedFileType={selectedFileType}
@@ -179,7 +179,7 @@ export default function App() {
                   Class 10, 11 & 12 AI & CS Study Portal
                 </h1>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                  Students can freely read chapter-wise Artificial Intelligence and Computer Science materials in PDF, PPT, DOCX, and interactive HTML. Teachers log in to upload materials and analyze topic visit counts.
+                  Students register with Full Name, Roll Number & Section (A or B) to read materials. Teachers log in with <code className="font-extrabold font-mono bg-sky-500/20 px-1.5 py-0.5 rounded text-sky-600 dark:text-sky-300">CSGS</code> and <code className="font-extrabold font-mono bg-sky-500/20 px-1.5 py-0.5 rounded text-sky-600 dark:text-sky-300">GS@123</code> to upload chapters.
                 </p>
               </div>
             </div>
@@ -219,7 +219,7 @@ export default function App() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-200">No materials uploaded yet</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  The portal is currently empty and ready for production uploads. Teachers can log in to upload PDF, PPT, DOCX, or HTML chapters.
+                  Teachers log in with CSGS / GS@123 to upload Class 10, 11, and 12 PDF, PPT, DOCX, or HTML chapters.
                 </p>
                 <button
                   onClick={handleOpenUpload}
@@ -252,22 +252,16 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 py-6 text-center text-xs text-slate-500 dark:text-slate-500 transition-colors">
-        <p>AI & CS Study Portal for Class 10, 11 & 12 | Built with Multi-Type Viewer & Topic-Wise Visit Analytics</p>
+      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 py-6 text-center text-xs text-slate-500 transition-colors">
+        <p>AI & CS Study Portal for Class 10, 11 & 12 | Built with Multi-Type Viewer & Student Access Analytics</p>
       </footer>
 
-      {/* Modals */}
-      <TeacherLoginModal
-        isOpen={isTeacherLoginOpen}
-        onClose={() => setIsTeacherLoginOpen(false)}
-        onLoginSuccess={handleTeacherLoginSuccess}
-      />
-
-      <StudentIdentityModal
-        isOpen={isIdentityOpen}
-        onClose={() => setIsIdentityOpen(false)}
-        onSave={handleSaveIdentity}
-        currentIdentity={studentIdentity}
+      {/* Unified Auth Modal (Student Register/Login & Teacher Login) */}
+      <UnifiedAuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onStudentAuthSuccess={handleStudentAuthSuccess}
+        onTeacherAuthSuccess={handleTeacherAuthSuccess}
       />
 
       <UploadModal
@@ -280,7 +274,7 @@ export default function App() {
         doc={activeViewerDoc}
         isOpen={!!activeViewerDoc}
         onClose={() => setActiveViewerDoc(null)}
-        studentIdentity={studentIdentity}
+        studentIdentity={studentIdentity || { name: 'Teacher CSGS', rollNo: 'Staff', studentClass: 'Staff' }}
         onAccessLogged={fetchDocuments}
       />
 

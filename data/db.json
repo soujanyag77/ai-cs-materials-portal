@@ -1,4 +1,15 @@
 {
   "documents": [],
-  "access_logs": []
+  "access_logs": [],
+  "students": [
+    {
+      "id": "stu_1791352906065_j28lq",
+      "name": "Rahul Sharma",
+      "rollNumber": "101",
+      "grade": "10",
+      "section": "A",
+      "studentClass": "10A",
+      "registeredAt": "2026-10-07T06:01:46.065Z"
+    }
+  ]
 }

@@ -9,7 +9,8 @@ if (!fs.existsSync(path.dirname(DB_FILE))) {
 
 const initialData = {
   documents: [],
-  access_logs: []
+  access_logs: [],
+  students: []
 };
 
 if (!fs.existsSync(DB_FILE)) {
@@ -19,7 +20,9 @@ if (!fs.existsSync(DB_FILE)) {
 function readDB() {
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const data = JSON.parse(raw);
+    if (!data.students) data.students = [];
+    return data;
   } catch (err) {
     console.error('Error reading DB file:', err);
     return initialData;
@@ -78,6 +81,59 @@ const db = {
     return null;
   },
 
+  // Student Registration & Authentication
+  registerStudent: ({ name, rollNumber, grade, section }) => {
+    const data = readDB();
+    const cleanName = name.trim();
+    const cleanRoll = rollNumber.trim();
+    const cleanSection = section.toUpperCase() === 'B' ? 'B' : 'A';
+    const studentClass = `${grade}${cleanSection}`; // e.g. "10A", "10B", "11A", "12B"
+
+    // Check if student already exists by name and roll
+    let existing = data.students.find(
+      s => s.name.toLowerCase() === cleanName.toLowerCase() && s.rollNumber.toLowerCase() === cleanRoll.toLowerCase()
+    );
+
+    if (existing) {
+      existing.grade = grade;
+      existing.section = cleanSection;
+      existing.studentClass = studentClass;
+      writeDB(data);
+      return { student: existing, isNew: false };
+    }
+
+    const newStudent = {
+      id: 'stu_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      name: cleanName,
+      rollNumber: cleanRoll,
+      grade,
+      section: cleanSection,
+      studentClass,
+      registeredAt: new Date().toISOString()
+    };
+
+    data.students.push(newStudent);
+    writeDB(data);
+    return { student: newStudent, isNew: true };
+  },
+
+  loginStudent: ({ name, rollNumber }) => {
+    const data = readDB();
+    const cleanName = name.trim().toLowerCase();
+    const cleanRoll = rollNumber.trim().toLowerCase();
+
+    const student = data.students.find(
+      s => s.name.toLowerCase() === cleanName && s.rollNumber.toLowerCase() === cleanRoll
+    );
+
+    return student || null;
+  },
+
+  getStudents: () => {
+    const data = readDB();
+    return data.students;
+  },
+
   logAccess: ({ documentId, studentName, rollNumber, studentClass }) => {
     const data = readDB();
     const doc = data.documents.find(d => d.id === documentId);
@@ -88,7 +144,7 @@ const db = {
       documentId,
       studentName: studentName.trim(),
       rollNumber: rollNumber ? rollNumber.trim() : 'N/A',
-      studentClass: studentClass || doc.grade, // e.g. "10A", "10B", "11A", "12B"
+      studentClass: studentClass || doc.grade,
       timestamp: new Date().toISOString()
     };
 
@@ -101,6 +157,7 @@ const db = {
     const data = readDB();
     const documents = data.documents;
     const logs = data.access_logs;
+    const students = data.students || [];
 
     const totalDocuments = documents.length;
     const totalAccesses = logs.length;
@@ -208,7 +265,7 @@ const db = {
       };
     }).sort((a, b) => b.totalVisits - a.totalVisits);
 
-    // 3. SECTION-WISE BREAKDOWN (10A, 10B, 11A, 11B, 12A, 12B)
+    // 3. SECTION-WISE BREAKDOWN
     const sectionStatsMap = {};
     logs.forEach(log => {
       const sec = log.studentClass || '10A';
@@ -263,7 +320,8 @@ const db = {
     return {
       totalDocuments,
       totalAccesses,
-      totalStudentsCount: userWiseStats.length,
+      totalStudentsCount: Math.max(students.length, userWiseStats.length),
+      registeredStudentsCount: students.length,
       sectionWiseStats,
       topicStats,
       userWiseStats,

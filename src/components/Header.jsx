@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Upload, BarChart3, BookOpen, UserCheck, Search, Filter, Code2, Cpu, Lock, LogOut, Sun, Moon } from 'lucide-react';
+import { Sparkles, Upload, BarChart3, BookOpen, UserCheck, Search, Filter, Code2, Cpu, Lock, LogOut, Sun, Moon, UserPlus, ShieldCheck } from 'lucide-react';
 
 export default function Header({
   selectedGrade,
@@ -9,11 +9,10 @@ export default function Header({
   activeTab,
   setActiveTab,
   onOpenUpload,
-  onOpenIdentity,
-  onOpenTeacherLogin,
+  onOpenAuth,
   isTeacher,
-  onLogoutTeacher,
   studentIdentity,
+  onLogout,
   searchQuery,
   setSearchQuery,
   selectedFileType,
@@ -98,58 +97,73 @@ export default function Header({
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
             </button>
 
-            {/* Teacher Role & Upload Control */}
+            {/* Upload Button (Teachers) */}
+            {isTeacher && (
+              <button
+                onClick={onOpenUpload}
+                className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-purple-500/20"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Upload Material</span>
+              </button>
+            )}
+
+            {/* User Identity & Login Control */}
             {isTeacher ? (
               <div className="flex items-center space-x-2">
+                <div className="bg-purple-500/10 border border-purple-500/30 text-purple-700 dark:text-purple-300 px-3 py-2 rounded-xl text-xs font-bold flex items-center space-x-2">
+                  <ShieldCheck className="w-4 h-4 text-purple-500" />
+                  <span>Teacher: CSGS</span>
+                </div>
                 <button
-                  onClick={onOpenUpload}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-purple-500/20"
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Upload Material</span>
-                </button>
-
-                <button
-                  onClick={onLogoutTeacher}
+                  onClick={onLogout}
                   className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 text-slate-600 dark:text-slate-400 hover:text-rose-500 transition"
-                  title="Exit Teacher Mode"
+                  title="Logout Teacher"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : studentIdentity ? (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={onOpenAuth}
+                  className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 px-3 py-2 rounded-xl text-xs transition"
+                  title="Click to switch student or teacher account"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-left hidden lg:block">
+                    <div className="text-[11px] font-bold text-slate-900 dark:text-slate-200 leading-tight">
+                      {studentIdentity.name}
+                    </div>
+                    <div className="text-[9px] text-slate-500 dark:text-slate-400">
+                      Sec {studentIdentity.studentClass} ({studentIdentity.rollNumber})
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={onLogout}
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 text-slate-600 dark:text-slate-400 hover:text-rose-500 transition"
+                  title="Logout Student"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <button
-                onClick={onOpenTeacherLogin}
-                className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-900 border border-purple-500/40 hover:border-purple-500 text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-white px-3.5 py-2 rounded-xl text-xs font-bold transition"
+                onClick={onOpenAuth}
+                className="flex items-center space-x-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-sky-500/20"
               >
-                <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Teacher Login</span>
+                <UserPlus className="w-4 h-4" />
+                <span>Login / Register</span>
               </button>
             )}
-
-            {/* Student Profile Identity Chip */}
-            <button
-              onClick={onOpenIdentity}
-              className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 px-3 py-2 rounded-xl text-xs transition"
-              title="Click to change student details"
-            >
-              <div className="w-7 h-7 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
-                <UserCheck className="w-4 h-4" />
-              </div>
-              <div className="text-left hidden lg:block">
-                <div className="text-[11px] font-bold text-slate-900 dark:text-slate-200 leading-tight">
-                  {studentIdentity?.name || 'Set Student'}
-                </div>
-                <div className="text-[9px] text-slate-500 dark:text-slate-400">
-                  {studentIdentity?.studentClass || 'Student'} ({studentIdentity?.rollNo || 'No Roll'})
-                </div>
-              </div>
-            </button>
 
           </div>
         </div>
 
-        {/* Bottom Sub-Navbar (Subject Tabs, Grade Tabs & Filters) */}
+        {/* Bottom Sub-Navbar */}
         {activeTab === 'library' && (
           <div className="py-3 border-t border-slate-200 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-4">
             
@@ -196,7 +210,6 @@ export default function Header({
             {/* File Type Filter & Search Bar */}
             <div className="flex items-center space-x-3 w-full sm:w-auto">
               
-              {/* File Type Filter */}
               <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-2 py-1">
                 <Filter className="w-3.5 h-3.5 text-slate-400 ml-1" />
                 <select
@@ -212,7 +225,6 @@ export default function Header({
                 </select>
               </div>
 
-              {/* Search Bar */}
               <div className="relative flex-1 sm:w-64">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
