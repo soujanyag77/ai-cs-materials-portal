@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Users, Eye, BookOpen, Clock, Search, Filter, ShieldCheck, RefreshCw, ChevronDown, ChevronUp, UserCheck, Sparkles, PieChart, Layers } from 'lucide-react';
+import { BarChart3, Users, Eye, BookOpen, Clock, Search, Filter, ShieldCheck, RefreshCw, ChevronDown, ChevronUp, UserCheck, Sparkles, PieChart, Layers, GraduationCap } from 'lucide-react';
 
 export default function AnalyticsDashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('topics'); // 'topics' | 'users' | 'classes' | 'logs'
+  const [activeTab, setActiveTab] = useState('sections'); // 'sections' | 'topics' | 'users' | 'logs'
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState('All');
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState('All');
   const [expandedUserKey, setExpandedUserKey] = useState(null);
 
   useEffect(() => {
@@ -30,32 +30,33 @@ export default function AnalyticsDashboard() {
     return (
       <div className="flex flex-col items-center justify-center py-24 space-y-4">
         <RefreshCw className="w-8 h-8 text-sky-400 animate-spin" />
-        <p className="text-sm font-semibold text-slate-400">Loading topic-wise & user-wise analytics...</p>
+        <p className="text-sm font-semibold text-slate-400">Loading section-wise & user-wise analytics...</p>
       </div>
     );
   }
 
   if (!analytics) return null;
 
-  // Max views for topic progress bar
   const maxTopicViews = (analytics.topicStats || []).length > 0 ? (analytics.topicStats[0].accessCount || 1) : 1;
+
+  // Sections filter list
+  const availableSections = ['All', '10A', '10B', '11A', '11B', '12A', '12B'];
 
   // Filter User-wise stats
   const filteredUsers = (analytics.userWiseStats || []).filter(u => {
-    const matchesGrade = selectedGradeFilter === 'All' || u.studentClass === selectedGradeFilter;
+    const matchesSection = selectedSectionFilter === 'All' || u.studentClass === selectedSectionFilter;
     const matchesQuery = !searchQuery ||
       u.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.rollNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGrade && matchesQuery;
+    return matchesSection && matchesQuery;
   });
 
   // Filter Topic stats
   const filteredTopics = (analytics.topicStats || []).filter(t => {
-    const matchesGrade = selectedGradeFilter === 'All' || t.grade === selectedGradeFilter;
     const matchesQuery = !searchQuery ||
       t.chapterTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGrade && matchesQuery;
+    return matchesQuery;
   });
 
   return (
@@ -69,10 +70,10 @@ export default function AnalyticsDashboard() {
             <ShieldCheck className="w-4 h-4" /> Teacher Analytics Console
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100">
-            Topic-Wise & User-Wise Access Analytics
+            Section-Wise & Student Visit Analytics
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Detailed breakdown of what topics were accessed how many times, total student visits, class-wise comparisons, and per-user learning history.
+            Detailed breakdown for sections 10A, 10B, 11A, 11B, 12A, 12B, student visit counts, and topic reading activity.
           </p>
         </div>
 
@@ -88,18 +89,18 @@ export default function AnalyticsDashboard() {
       {/* KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Total Registered Users */}
+        {/* Total Students */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center space-x-4">
           <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
             <Users className="w-6 h-6" />
           </div>
           <div>
             <div className="text-2xl font-black text-slate-100">{analytics.totalStudentsCount || 0}</div>
-            <div className="text-xs font-semibold text-slate-400">Total Logged-in Users</div>
+            <div className="text-xs font-semibold text-slate-400">Total Logged-in Students</div>
           </div>
         </div>
 
-        {/* Total Visits / Open Count */}
+        {/* Total Material Visits */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center space-x-4">
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
             <Eye className="w-6 h-6" />
@@ -110,44 +111,44 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* Total Topics / Chapters */}
+        {/* Active Class Sections */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center space-x-4">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <BookOpen className="w-6 h-6" />
+            <GraduationCap className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-100">{analytics.topicStats?.length || 0}</div>
-            <div className="text-xs font-semibold text-slate-400">Active Topics / Units</div>
+            <div className="text-2xl font-black text-slate-100">{analytics.sectionWiseStats?.length || 0}</div>
+            <div className="text-xs font-semibold text-slate-400">Active Sections Tracked</div>
           </div>
         </div>
 
-        {/* Subject Views Ratio */}
+        {/* Top Section */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center space-x-4">
           <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-            <PieChart className="w-6 h-6" />
+            <Layers className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-300 space-y-0.5">
-              <div>AI Views: <span className="text-sky-400 font-extrabold">{analytics.subjectStats?.['Artificial Intelligence']?.views || 0}</span></div>
-              <div>CS Views: <span className="text-purple-400 font-extrabold">{analytics.subjectStats?.['Computer Science']?.views || 0}</span></div>
+            <div className="text-lg font-black text-slate-100">
+              {analytics.sectionWiseStats?.[0]?.sectionName ? `Section ${analytics.sectionWiseStats[0].sectionName}` : 'N/A'}
             </div>
+            <div className="text-xs font-semibold text-slate-400">Most Active Section</div>
           </div>
         </div>
 
       </div>
 
-      {/* Analytics Sub-Navbar & Search */}
+      {/* Analytics Sub-Navbar & Filter */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
         
         {/* Analytics Mode Tabs */}
         <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-none">
           <button
-            onClick={() => setActiveTab('topics')}
+            onClick={() => setActiveTab('sections')}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-              activeTab === 'topics' ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'sections' ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <BookOpen className="w-4 h-4" /> Topic-Wise Analysis
+            <GraduationCap className="w-4 h-4" /> Section Breakdown (10A, 10B, 11, 12)
           </button>
 
           <button
@@ -156,16 +157,16 @@ export default function AnalyticsDashboard() {
               activeTab === 'users' ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Users className="w-4 h-4" /> User-Wise Visits
+            <Users className="w-4 h-4" /> Student Visits
           </button>
 
           <button
-            onClick={() => setActiveTab('classes')}
+            onClick={() => setActiveTab('topics')}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-              activeTab === 'classes' ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'topics' ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Layers className="w-4 h-4" /> Class-Wise Comparison
+            <BookOpen className="w-4 h-4" /> Topic Access Counts
           </button>
 
           <button
@@ -178,27 +179,27 @@ export default function AnalyticsDashboard() {
           </button>
         </div>
 
-        {/* Grade Filter & Search */}
+        {/* Section Filter & Search */}
         <div className="flex items-center space-x-3 w-full sm:w-auto">
-          <div className="flex items-center space-x-1">
-            {['All', 'Class 10', 'Class 11', 'Class 12'].map(g => (
+          <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none">
+            {availableSections.map(sec => (
               <button
-                key={g}
-                onClick={() => setSelectedGradeFilter(g)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                  selectedGradeFilter === g ? 'bg-sky-500 text-slate-950 font-extrabold' : 'bg-slate-950 text-slate-400 border border-slate-800'
+                key={sec}
+                onClick={() => setSelectedSectionFilter(sec)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                  selectedSectionFilter === sec ? 'bg-sky-500 text-slate-950 font-extrabold' : 'bg-slate-950 text-slate-400 border border-slate-800'
                 }`}
               >
-                {g}
+                {sec === 'All' ? 'All Sections' : `Sec ${sec}`}
               </button>
             ))}
           </div>
 
-          <div className="relative flex-1 sm:w-60">
+          <div className="relative flex-1 sm:w-48">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search student or roll..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 outline-none"
@@ -208,76 +209,57 @@ export default function AnalyticsDashboard() {
 
       </div>
 
-      {/* 1. TOPIC-WISE ANALYSIS VIEW */}
-      {activeTab === 'topics' && (
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-sky-400" />
-              What Topics Were Accessed How Many Times
-            </h2>
-            <p className="text-xs text-slate-400">Total times each topic/chapter was opened by students across Class 10, 11, and 12.</p>
-          </div>
+      {/* 1. SECTION-WISE BREAKDOWN VIEW (10A, 10B, 11A, 11B, 12A, 12B) */}
+      {activeTab === 'sections' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(analytics.sectionWiseStats || []).map((sec, idx) => (
+            <div key={idx} className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-3.5 py-1 rounded-xl font-black text-sm bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md">
+                  Section {sec.sectionName}
+                </span>
+                <span className="text-xs font-bold text-slate-400">{sec.uniqueStudentsCount} Students</span>
+              </div>
 
-          <div className="space-y-4">
-            {filteredTopics.length === 0 ? (
-              <p className="text-center py-8 text-slate-500 text-xs">No topics match search criteria.</p>
-            ) : (
-              filteredTopics.map((topic, idx) => {
-                const pct = Math.round((topic.accessCount / maxTopicViews) * 100);
-                return (
-                  <div key={idx} className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center space-x-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                          {topic.grade}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                          {topic.subject}
-                        </span>
-                        <h3 className="text-sm font-bold text-slate-100">{topic.chapterNumber}: {topic.chapterTitle}</h3>
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+                <div className="text-3xl font-black text-sky-400">{sec.totalViews}</div>
+                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Total Material Visits</div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Most Read Topics in Section {sec.sectionName}:</h4>
+                <div className="space-y-2">
+                  {sec.topTopics.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">No topic visits logged yet.</p>
+                  ) : (
+                    sec.topTopics.slice(0, 3).map((top, tIdx) => (
+                      <div key={tIdx} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-300 truncate pr-2">{top.name}</span>
+                        <span className="font-bold text-sky-400 shrink-0">{top.count} views</span>
                       </div>
-
-                      <div className="flex items-center space-x-4 text-xs">
-                        <div className="text-right">
-                          <span className="text-base font-black text-sky-400">{topic.accessCount}</span>
-                          <span className="text-[11px] text-slate-400 font-semibold ml-1">views</span>
-                        </div>
-                        <div className="text-right text-indigo-300 text-[11px]">
-                          <span className="font-bold">{topic.uniqueStudentsCount}</span> students
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar Visualizer */}
-                    <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(pct, 5)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* 2. USER-WISE VISITS ANALYSIS VIEW */}
+      {/* 2. STUDENT VISITS ANALYSIS VIEW */}
       {activeTab === 'users' && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
           <div>
             <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
               <Users className="w-5 h-5 text-indigo-400" />
-              Per-User Visits & Topic History
+              Student Visits & Reading History
             </h2>
-            <p className="text-xs text-slate-400">Click any user to reveal exact topics read and how many times they visited each topic.</p>
+            <p className="text-xs text-slate-400">Click any student to see exact topics read and how many times visited.</p>
           </div>
 
           <div className="space-y-3">
             {filteredUsers.length === 0 ? (
-              <p className="text-center py-8 text-slate-500 text-xs">No student users found.</p>
+              <p className="text-center py-8 text-slate-500 text-xs">No students found matching section filter.</p>
             ) : (
               filteredUsers.map((user, idx) => {
                 const userKey = `${user.studentName}_${user.rollNumber}_${user.studentClass}`;
@@ -296,8 +278,8 @@ export default function AnalyticsDashboard() {
                         <div>
                           <div className="flex items-center space-x-2">
                             <h3 className="text-sm font-bold text-slate-100">{user.studentName}</h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                              {user.studentClass}
+                            <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                              Section {user.studentClass}
                             </span>
                           </div>
                           <p className="text-xs text-slate-400">Roll No: <span className="text-slate-200">{user.rollNumber}</span></p>
@@ -340,50 +322,62 @@ export default function AnalyticsDashboard() {
         </div>
       )}
 
-      {/* 3. CLASS-WISE COMPARISON VIEW */}
-      {activeTab === 'classes' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(analytics.classWiseStats || []).map((cls, idx) => (
-            <div key={idx} className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1 rounded-xl font-extrabold text-sm bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                    {cls.className}
-                  </span>
-                  <span className="text-xs font-bold text-slate-400">{cls.documentsCount} files</span>
-                </div>
+      {/* 3. TOPIC ACCESS COUNTS VIEW */}
+      {activeTab === 'topics' && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-sky-400" />
+              What Topics Were Accessed How Many Times
+            </h2>
+            <p className="text-xs text-slate-400">Total times each topic/chapter was opened by students across sections.</p>
+          </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
-                    <div className="text-2xl font-black text-sky-400">{cls.totalViews}</div>
-                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Visits</div>
-                  </div>
-                  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
-                    <div className="text-2xl font-black text-indigo-400">{cls.uniqueStudentsCount}</div>
-                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Active Users</div>
-                  </div>
-                </div>
-
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Most Popular Topics in {cls.className}:</h4>
-                <div className="space-y-2">
-                  {cls.topTopics.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic">No views recorded yet.</p>
-                  ) : (
-                    cls.topTopics.slice(0, 4).map((top, tIdx) => (
-                      <div key={tIdx} className="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-slate-300 truncate pr-2">{top.name}</span>
-                        <span className="font-bold text-sky-400 shrink-0">{top.count} views</span>
+          <div className="space-y-4">
+            {filteredTopics.length === 0 ? (
+              <p className="text-center py-8 text-slate-500 text-xs">No topics match search criteria.</p>
+            ) : (
+              filteredTopics.map((topic, idx) => {
+                const pct = Math.round((topic.accessCount / maxTopicViews) * 100);
+                return (
+                  <div key={idx} className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                          {topic.grade}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                          {topic.subject}
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-100">{topic.chapterNumber}: {topic.chapterTitle}</h3>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+
+                      <div className="flex items-center space-x-4 text-xs">
+                        <div className="text-right">
+                          <span className="text-base font-black text-sky-400">{topic.accessCount}</span>
+                          <span className="text-[11px] text-slate-400 font-semibold ml-1">views</span>
+                        </div>
+                        <div className="text-right text-indigo-300 text-[11px]">
+                          <span className="font-bold">{topic.uniqueStudentsCount}</span> students
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(pct, 5)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
 
-      {/* 4. LIVE AUDIT TRAIL LOGS */}
+      {/* 4. LIVE ACCESS TRAIL */}
       {activeTab === 'logs' && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
@@ -402,7 +396,7 @@ export default function AnalyticsDashboard() {
                 <tr>
                   <th className="p-3 rounded-l-xl">Student Name</th>
                   <th className="p-3">Roll No</th>
-                  <th className="p-3">Class</th>
+                  <th className="p-3">Class Section</th>
                   <th className="p-3">Document Title</th>
                   <th className="p-3">Chapter</th>
                   <th className="p-3 rounded-r-xl">Timestamp</th>
@@ -417,8 +411,8 @@ export default function AnalyticsDashboard() {
                     </td>
                     <td className="p-3 text-slate-300 font-mono">{log.rollNumber}</td>
                     <td className="p-3">
-                      <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 text-[10px] font-semibold">
-                        {log.studentClass}
+                      <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 text-[10px] font-extrabold">
+                        Section {log.studentClass}
                       </span>
                     </td>
                     <td className="p-3 font-semibold text-slate-200 max-w-xs truncate">{log.documentTitle}</td>

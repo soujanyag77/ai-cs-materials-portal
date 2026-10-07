@@ -17,6 +17,26 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('library'); // 'library' | 'analytics'
 
+  // Dark / Light Theme state
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('theme') || 'dark';
+    } catch (e) {
+      return 'dark';
+    }
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {}
+  }, [theme]);
+
   // Teacher Authentication state
   const [isTeacher, setIsTeacher] = useState(() => {
     return !!sessionStorage.getItem('teacher_token');
@@ -32,9 +52,9 @@ export default function App() {
   const [studentIdentity, setStudentIdentity] = useState(() => {
     try {
       const saved = localStorage.getItem('student_identity');
-      return saved ? JSON.parse(saved) : { name: 'Aarav Sharma', rollNo: '101', studentClass: 'Class 10' };
+      return saved ? JSON.parse(saved) : null;
     } catch (e) {
-      return { name: 'Aarav Sharma', rollNo: '101', studentClass: 'Class 10' };
+      return null;
     }
   });
 
@@ -117,7 +137,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       
       {/* Top Navbar Header */}
       <Header
@@ -137,6 +157,8 @@ export default function App() {
         setSearchQuery={setSearchQuery}
         selectedFileType={selectedFileType}
         setSelectedFileType={setSelectedFileType}
+        theme={theme}
+        setTheme={setTheme}
       />
 
       {/* Main App Container */}
@@ -147,16 +169,16 @@ export default function App() {
           <div className="space-y-8">
             
             {/* Hero Welcome Banner */}
-            <div className="bg-gradient-to-r from-sky-900/40 via-indigo-950/60 to-purple-950/40 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+            <div className="bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-purple-500/10 dark:from-sky-900/40 dark:via-indigo-950/60 dark:to-purple-950/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-sm dark:shadow-2xl transition-colors">
               <div className="max-w-2xl relative z-10">
-                <div className="inline-flex items-center space-x-2 bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+                <div className="inline-flex items-center space-x-2 bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>CBSE AI & CS Curriculum 2026</span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight leading-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
                   Class 10, 11 & 12 AI & CS Study Portal
                 </h1>
-                <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
                   Students can freely read chapter-wise Artificial Intelligence and Computer Science materials in PDF, PPT, DOCX, and interactive HTML. Teachers log in to upload materials and analyze topic visit counts.
                 </p>
               </div>
@@ -165,12 +187,12 @@ export default function App() {
             {/* Document Grid Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-sky-400" />
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-sky-500 dark:text-sky-400" />
                   {selectedSubject === 'All' ? 'All Subjects' : selectedSubject}
                   {selectedGrade !== 'All' ? ` (${selectedGrade})` : ''}
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Showing {documents.length} chapter {documents.length === 1 ? 'file' : 'files'}
                 </p>
               </div>
@@ -187,23 +209,23 @@ export default function App() {
             {/* Document Card Grid */}
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <RefreshCw className="w-8 h-8 text-sky-400 animate-spin" />
-                <p className="text-sm font-semibold text-slate-400">Loading study materials...</p>
+                <RefreshCw className="w-8 h-8 text-sky-500 animate-spin" />
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Loading study materials...</p>
               </div>
             ) : documents.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-12 text-center max-w-md mx-auto space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto text-slate-500">
-                  <Search className="w-8 h-8" />
+              <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
+                  <BookOpen className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-200">No materials found</h3>
-                <p className="text-xs text-slate-400">
-                  No uploaded files match your selected subject or grade filter.
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-200">No materials uploaded yet</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  The portal is currently empty and ready for production uploads. Teachers can log in to upload PDF, PPT, DOCX, or HTML chapters.
                 </p>
                 <button
                   onClick={handleOpenUpload}
-                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs shadow-lg transition"
+                  className="bg-sky-500 hover:bg-sky-400 text-white dark:text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs shadow-lg transition"
                 >
-                  Upload File Now
+                  Upload First Chapter File
                 </button>
               </div>
             ) : (
@@ -230,7 +252,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 py-6 text-center text-xs text-slate-500 dark:text-slate-500 transition-colors">
         <p>AI & CS Study Portal for Class 10, 11 & 12 | Built with Multi-Type Viewer & Topic-Wise Visit Analytics</p>
       </footer>
 

@@ -3,18 +3,15 @@ const path = require('path');
 
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
 
-// Ensure data directory exists
 if (!fs.existsSync(path.dirname(DB_FILE))) {
   fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
 }
 
-// Initial Database Structure
 const initialData = {
   documents: [],
   access_logs: []
 };
 
-// Initialize DB file if not present
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
 }
@@ -37,7 +34,6 @@ function writeDB(data) {
   }
 }
 
-// Public DB API
 const db = {
   getDocuments: () => {
     const data = readDB();
@@ -55,11 +51,11 @@ const db = {
       id: 'doc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       title: doc.title,
       description: doc.description || '',
-      grade: doc.grade, // 'Class 10', 'Class 11', 'Class 12'
+      grade: doc.grade,
       subject: doc.subject || 'Artificial Intelligence',
       chapterNumber: doc.chapterNumber || 'Chapter 1',
       chapterTitle: doc.chapterTitle || 'General',
-      fileType: doc.fileType, // 'pdf', 'ppt', 'pptx', 'docx', 'html'
+      fileType: doc.fileType,
       fileName: doc.fileName,
       originalName: doc.originalName,
       fileSize: doc.fileSize,
@@ -92,7 +88,7 @@ const db = {
       documentId,
       studentName: studentName.trim(),
       rollNumber: rollNumber ? rollNumber.trim() : 'N/A',
-      studentClass: studentClass || doc.grade,
+      studentClass: studentClass || doc.grade, // e.g. "10A", "10B", "11A", "12B"
       timestamp: new Date().toISOString()
     };
 
@@ -115,7 +111,7 @@ const db = {
       
       const studentMap = {};
       docLogs.forEach(l => {
-        const key = `${l.studentName} (${l.rollNumber || 'N/A'}) - ${l.studentClass}`;
+        const key = `${l.studentName} (${l.rollNumber || 'N/A'}) - Section ${l.studentClass}`;
         if (!studentMap[key]) {
           studentMap[key] = {
             studentName: l.studentName,
@@ -141,7 +137,7 @@ const db = {
       };
     });
 
-    // 1. TOPIC / CHAPTER-WISE ANALYSIS (What topics accessed how many times)
+    // 1. TOPIC / CHAPTER-WISE ANALYSIS
     const topicMap = {};
     logs.forEach(log => {
       const doc = documents.find(d => d.id === log.documentId);
@@ -169,7 +165,7 @@ const db = {
       uniqueStudentsCount: t.students.size
     })).sort((a, b) => b.accessCount - a.accessCount);
 
-    // 2. USER-WISE DETAILED ANALYSIS (Visits & Topics read per user)
+    // 2. USER-WISE DETAILED ANALYSIS
     const userMap = {};
     logs.forEach(log => {
       const userKey = `${log.studentName.toLowerCase()}_${(log.rollNumber || 'na').toLowerCase()}_${log.studentClass}`;
@@ -212,45 +208,40 @@ const db = {
       };
     }).sort((a, b) => b.totalVisits - a.totalVisits);
 
-    // 3. CLASS-WISE DETAILED ANALYSIS
-    const classStats = {
-      'Class 10': { documents: 0, views: 0, uniqueStudents: new Set(), topTopics: {} },
-      'Class 11': { documents: 0, views: 0, uniqueStudents: new Set(), topTopics: {} },
-      'Class 12': { documents: 0, views: 0, uniqueStudents: new Set(), topTopics: {} }
-    };
-
-    documents.forEach(doc => {
-      if (classStats[doc.grade]) {
-        classStats[doc.grade].documents += 1;
-      }
-    });
-
+    // 3. SECTION-WISE BREAKDOWN (10A, 10B, 11A, 11B, 12A, 12B)
+    const sectionStatsMap = {};
     logs.forEach(log => {
+      const sec = log.studentClass || '10A';
+      if (!sectionStatsMap[sec]) {
+        sectionStatsMap[sec] = {
+          sectionName: sec,
+          totalViews: 0,
+          uniqueStudents: new Set(),
+          topicsMap: {}
+        };
+      }
+      sectionStatsMap[sec].totalViews += 1;
+      sectionStatsMap[sec].uniqueStudents.add(`${log.studentName}_${log.rollNumber}`);
+
       const doc = documents.find(d => d.id === log.documentId);
-      const cls = log.studentClass || (doc ? doc.grade : null);
-      if (cls && classStats[cls]) {
-        classStats[cls].views += 1;
-        classStats[cls].uniqueStudents.add(`${log.studentName}_${log.rollNumber}`);
-        if (doc) {
-          const tName = `${doc.chapterNumber}: ${doc.chapterTitle}`;
-          classStats[cls].topTopics[tName] = (classStats[cls].topTopics[tName] || 0) + 1;
-        }
+      if (doc) {
+        const tName = `${doc.chapterNumber}: ${doc.chapterTitle}`;
+        sectionStatsMap[sec].topicsMap[tName] = (sectionStatsMap[sec].topicsMap[tName] || 0) + 1;
       }
     });
 
-    const classWiseStats = Object.entries(classStats).map(([className, data]) => {
-      const topTopicsSorted = Object.entries(data.topTopics)
+    const sectionWiseStats = Object.values(sectionStatsMap).map(s => {
+      const topTopicsSorted = Object.entries(s.topicsMap)
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count);
 
       return {
-        className,
-        documentsCount: data.documents,
-        totalViews: data.views,
-        uniqueStudentsCount: data.uniqueStudents.size,
+        sectionName: s.sectionName,
+        totalViews: s.totalViews,
+        uniqueStudentsCount: s.uniqueStudents.size,
         topTopics: topTopicsSorted
       };
-    });
+    }).sort((a, b) => b.totalViews - a.totalViews);
 
     // Recent logs
     const recentLogs = [...logs]
@@ -273,7 +264,7 @@ const db = {
       totalDocuments,
       totalAccesses,
       totalStudentsCount: userWiseStats.length,
-      classWiseStats,
+      sectionWiseStats,
       topicStats,
       userWiseStats,
       docsWithStats,
